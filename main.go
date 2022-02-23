@@ -51,9 +51,10 @@ type (
 
 	jsonError struct {
 		responseID      string `json:"response_id"`
-		responseMessage string `json:"response_msg"`
-		responseCode    int32  `json:"response_code"`
-		responseErr     error  `json:"response_err"`
+		responseMessage string `json:"message"`
+		responseCode    int    `json:"status"`
+		responseErr     error  `json:"error"`
+		responseData    []todo `json:"data"`
 	}
 )
 
@@ -67,7 +68,7 @@ func handleIndex(res http.ResponseWriter, req *http.Request) {
 	reqUrl := "." + req.URL.Path
 	if reqUrl == "./" {
 		log.Println(req.Method)
-		reqUrl = "./static/index.html"
+		reqUrl = "./static/templates/index.html"
 
 		http.ServeFile(res, req, reqUrl)
 
@@ -89,11 +90,16 @@ func handleIndex(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func responseError(res http.ResponseWriter, data interface{}, responseCode int) {
+func responseError(res http.ResponseWriter, responseParam jsonError) {
 	res.Header().Set("Content-Type", "application/json; charset=utf-8")
 	res.Header().Set("X-Content-Type-Options", "nosniff")
-	res.WriteHeader(responseCode)
-	json.NewEncoder(res).Encode(data)
+	res.WriteHeader(responseParam.responseCode)
+	json.NewEncoder(res).Encode(map[string]interface{}{
+		"message": responseParam.responseMessage,
+		"status":  responseParam.responseCode,
+		"data":    responseParam.responseData,
+	})
+	log.Println("%v", res)
 }
 
 func handleFetchToDo(res http.ResponseWriter, req *http.Request) {
@@ -111,7 +117,7 @@ func handleFetchToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     err,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -121,7 +127,7 @@ func handleFetchToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     err,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -137,7 +143,20 @@ func handleFetchToDo(res http.ResponseWriter, req *http.Request) {
 		})
 	}
 
-	responseError(res, toDoList, http.StatusOK)
+	// json.NewEncoder(res).Encode(map[string]interface{}{
+	// 	"message": "success",
+	// 	"status":  http.StatusOK,
+	// 	"data":    toDoList,
+	// })
+
+	errRes := jsonError{
+		responseMessage: "Couldn't Fetch Data",
+		responseCode:    http.StatusProcessing,
+		responseErr:     err,
+		responseData:    toDoList,
+	}
+
+	responseError(res, errRes)
 }
 
 func handleAddToDo(res http.ResponseWriter, req *http.Request) {
@@ -152,7 +171,7 @@ func handleAddToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     err,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -162,7 +181,7 @@ func handleAddToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     nil,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -180,7 +199,7 @@ func handleAddToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     insertErr,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -189,18 +208,18 @@ func handleAddToDo(res http.ResponseWriter, req *http.Request) {
 		responseMessage: "Data Saved Successfully",
 		responseCode:    http.StatusOK,
 	}
-	responseError(res, errRes, http.StatusOK)
+	responseError(res, errRes)
 }
 
 func handleDeleteToDo(res http.ResponseWriter, req *http.Request) {
-	id, ok := req.URL.Query()["ID"]
+	id, ok := req.URL.Query()["id"]
 
 	if !ok || len(id[0]) < 1 || !primitive.IsValidObjectID(id[0]) {
 		errRes := jsonError{
 			responseMessage: "Invalid request ID",
 			responseCode:    http.StatusBadRequest,
 		}
-		responseError(res, errRes, http.StatusBadRequest)
+		responseError(res, errRes)
 		return
 	}
 
@@ -216,7 +235,7 @@ func handleDeleteToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusBadRequest,
 			responseErr:     err,
 		}
-		responseError(res, errRes, http.StatusBadRequest)
+		responseError(res, errRes)
 		return
 	}
 
@@ -225,18 +244,18 @@ func handleDeleteToDo(res http.ResponseWriter, req *http.Request) {
 		responseMessage: "Todo List Deleted Successfully",
 		responseCode:    http.StatusOK,
 	}
-	responseError(res, errRes, http.StatusOK)
+	responseError(res, errRes)
 }
 
 func handleUpdateToDo(res http.ResponseWriter, req *http.Request) {
-	id, ok := req.URL.Query()["ID"]
+	id, ok := req.URL.Query()["id"]
 
 	if !ok || len(id[0]) < 1 || !primitive.IsValidObjectID(id[0]) {
 		errRes := jsonError{
 			responseMessage: "Invalid request ID",
 			responseCode:    http.StatusBadRequest,
 		}
-		responseError(res, errRes, http.StatusBadRequest)
+		responseError(res, errRes)
 		return
 	}
 
@@ -248,7 +267,7 @@ func handleUpdateToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     err,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -257,7 +276,7 @@ func handleUpdateToDo(res http.ResponseWriter, req *http.Request) {
 			responseMessage: "Title Field is required",
 			responseCode:    http.StatusProcessing,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 
@@ -283,7 +302,7 @@ func handleUpdateToDo(res http.ResponseWriter, req *http.Request) {
 			responseCode:    http.StatusProcessing,
 			responseErr:     err,
 		}
-		responseError(res, errRes, http.StatusProcessing)
+		responseError(res, errRes)
 		return
 	}
 }
