@@ -5,8 +5,117 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To Do List App</title>
+    <!-- CSS -->
+    <!-- <link rel="stylesheet" type="text/css" href="./style/style.css"> -->
+    <style>
+        .todo-header{
+            background-color: #C4C4C4;
+            padding: 30px 40px;
+        }
+        .todo-title{
+            width: 100%;
+            background: #C4C4C4;
+            color: rgb(27, 9, 9);
+            font-size: 30px;
+            font-weight: bold;
+            padding: 20px 10px;
+            text-align: left;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        input {
+            margin: 0;
+            border: #160505;
+            border-radius: 0;
+            width: 75%;
+            padding: 10px;
+            text-align: left;
+            font-size: 16px;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        }
+        .description-input {
+            height: 30px;
+        }
+        .addBtn {
+            padding: 10px;
+            width: 5%;
+            background: #8fabcc;
+            color: #252729;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 0;
+        }
+        .addBtn:hover {
+            background-color: #3d74b3;
+            color: #c8d2dd;
+        }
+        ul li{
+            cursor: pointer;
+            padding: 12px 8px 12px 40px;
+            list-style-type: none;
+            background: #eee;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        ul li:nth-child(odd) {
+            background: #f9f9f9;
+        }
+        ul li:hover {
+            background: #ddd;
+        }
+    </style>
 </head>
 <body>
-    <h1>What do you want to do?</h1>
+    <div class="todo-header">
+        <h1 class="todo-title">My Todo List</h1>
+        <input type="text" id="titleId" placeholder="Add Title...">
+        <input type="text" class="description-input" placeholder="Add Desription...">
+        <span class="addBtn" type="button" on:click="addTodo">Add</span>
+    </div>
+    <div class="row">
+        <ul class="list-group">
+            <li>
+
+            </li>
+        </ul>
+    </div>
+
+    <!-- jQuery -->
+    <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js'></script>
+    <script type="text/javascript">
+        let tododItems = []
+
+        $(document).ready(function(){
+          getTodo();
+        });
+
+        function getTodo() {
+            $.ajax({
+                type:"GET",
+                url:"/todo",
+                dataType: 'json',
+                success : function(results) {
+                    console.log(results["data"])
+                }
+            });
+        }
+
+        function addTodo() {
+            if(confirm("Are You sure?")){
+                const todo = {
+                    title,
+                    checked: false,
+                    description,
+                };
+
+                tododItems.push(todo)
+                console.log(tododItems);
+            }
+        }
+        
+    </script>
+    
 </body>
 </html>

@@ -8,6 +8,11 @@
 .card-body{
   padding: 0 !important;
 }
+.todo-header{
+  width: 533px;
+  height: 90px;
+  background-color: #C4C4C4;
+}
 .todo-title{
   width: 100%;
   background: #b88f92;
