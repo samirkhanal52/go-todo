@@ -22,7 +22,6 @@ func HandleIndex(res http.ResponseWriter, req *http.Request) {
 		case "GET":
 			middleware.HandleFetchToDo(res, req)
 		case "POST":
-			log.Println("here")
 			middleware.HandleAddToDo(res, req)
 		case "DELETE":
 			middleware.HandleDeleteToDo(res, req)

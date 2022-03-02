@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>To Do List App</title>
     <!-- CSS -->
     <!-- <link rel="stylesheet" type="text/css" href="./style/style.css"> -->
@@ -51,6 +52,21 @@
             background-color: #3d74b3;
             color: #c8d2dd;
         }
+        table {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        td, th {
+            text-align: left;
+            padding: 8px;
+        }
+        tr:nth-child(odd) {
+            background: #f9f9f9;
+        }
+        tr:hover {
+            background: #ddd;
+        }
         ul li{
             cursor: pointer;
             padding: 12px 8px 12px 40px;
@@ -65,27 +81,43 @@
         ul li:hover {
             background: #ddd;
         }
+        .tr-checkbox {
+            cursor: pointer;
+        }
+        .delete-btn {
+            background-color: #ec2e14;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="todo-header">
         <h1 class="todo-title">My Todo List</h1>
         <input type="text" id="titleId" placeholder="Add Title...">
-        <input type="text" class="description-input" placeholder="Add Desription...">
-        <span class="addBtn" type="button" on:click="addTodo">Add</span>
+        <input type="text" id="descriptionId" class="description-input" placeholder="Add Desription...">
+        <span class="addBtn" type="button" onclick="addTodo()">Add</span>
     </div>
     <div class="row">
-        <ul class="list-group">
-            <li>
-
-            </li>
-        </ul>
+        <table class="table table-striped">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Completed</th>
+                <th>Delete</th>
+            </tr>
+    
+            <tbody id="todoTable">
+    
+            </tbody>
+        </table>
     </div>
 
     <!-- jQuery -->
     <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js'></script>
     <script type="text/javascript">
-        let tododItems = []
+        var tododItems = []
 
         $(document).ready(function(){
           getTodo();
@@ -95,24 +127,59 @@
             $.ajax({
                 type:"GET",
                 url:"/todo",
-                dataType: 'json',
-                success : function(results) {
-                    console.log(results["data"])
+                success : function(response) {
+                    tododItems = response.data
+                    buildTable(tododItems)
                 }
             });
         }
 
+        function buildTable(data) {
+            var table = document.getElementById('todoTable')
+
+            for (var i = 0; i < data.length; i++){
+                var row = `<tr>
+                                <td>${data[i].title}</td>
+                                <td>${data[i].description}</td>
+                                <td><input type="checkbox" class="tr-checkbox" checked="${data[i].is_completed}"/></td>
+                                <td><button id="${data[i].id}" class="delete-btn"><span class="fa fa-trash" /></button></td>
+                            </tr>`
+                table.innerHTML += row
+            }
+        }
+
         function addTodo() {
             if(confirm("Are You sure?")){
-                const todo = {
-                    title,
+                tododItems = []
+                let todo = {
+                    title : this.titleId.value,
                     checked: false,
-                    description,
+                    description : this.descriptionId.value,
                 };
 
-                tododItems.push(todo)
-                console.log(tododItems);
+                if (this.titleId.value == '') {
+                    this.showError = true;
+                }else {
+                    tododItems.push(todo)
+
+                    $.ajax({
+                        type:"POST",
+                        url:"/todo",
+                        dataType: "json",
+                        data: JSON.stringify(tododItems[0]),
+                        success : function(response) {
+                            if (response["status"] == "200") {
+                                alert(response["message"])
+                                setInterval('refreshPage()', 100);
+                            }
+                        }
+                    });
+                }
             }
+        }
+
+        function refreshPage() {
+            location.reload(true);
         }
         
     </script>

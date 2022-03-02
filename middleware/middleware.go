@@ -168,6 +168,7 @@ func HandleAddToDo(res http.ResponseWriter, req *http.Request) {
 	newToDo := models.ToDoModel{
 		ID:          primitive.NewObjectID(),
 		Title:       todo.Title,
+		Description: todo.Description,
 		IsCompleted: false,
 		CreatedAt:   time.Now(),
 		Remarks:     "",
